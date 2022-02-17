@@ -90,24 +90,26 @@ class Bullet extends World{
   }
 }
 
-restart.addEventListener('click',()=>{
+Start()
+function Start(){
+
     clear()
     let world = new World()
     let dyno = new Dyno()
     let bullet = new Bullet()
     world.floor()
     dyno.show()
-    redo(world,dyno,bullet)
-});
-function redo(world, dyno, bullet ){
-    let time = 0,timeJump = 0, jump_time = 0.1;
-    let game = setInterval(()=>{
+    let time = 0
+    let timeJump = 0
+    let jump_time = 0.1
+
+    function game(world, dyno, bullet){
         timeJump = dyno.jump(timeJump,jump_time);
         bullet.move();
         btn.addEventListener('click',()=>{timeJump = 0});
         if(timeJump == 6) timeJump--;
         jumpbtn.disabled = (world.onFloor(dyno.location) > 0)
-        if(bullet.obj.length != 0) if(world.checkCollision(dyno,bullet.obj)) stopping(game);
+        if(bullet.obj.length != 0) if(world.checkCollision(dyno,bullet.obj)) clearInterval(interval);
         if(time%bullet.occur == 50){
             bullet.create();
             let rand_bullet_addition = Math.floor(Math.random()*15)
@@ -119,15 +121,21 @@ function redo(world, dyno, bullet ){
         }
         if(bullet.occur <= 50){
             ctx.strokeText("END! U WON!!!",450,150)
-            stopping(game)
+            clearInterval(interval)
         };
         occ.innerHTML = "Bullets Left =>"+(bullet.occur-50);
         speed.innerHTML = "Bullet Speed =>"+bullet.objectSpeed.toFixed(2);
         time++
-    },20);
-    stop.addEventListener('click',()=>{stopping(game)});
+    }
+
+    let interval = setInterval(game, 20, world, dyno, bullet)
+
+    stop.addEventListener('click',()=>{clearInterval(interval)});
+    restart.addEventListener('click',()=>{
+        clearInterval(interval)
+        Start()
+    });
 }
-function stopping(x){clearInterval(x)}
 function clear(){
   ctx.beginPath();
   ctx.fillStyle = "#fff8f8";
