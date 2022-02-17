@@ -2,6 +2,7 @@ const c = document.getElementById("Mycanvas");
 const ctx = c.getContext("2d");
 const btn = document.getElementById("jump")
 const stop = document.getElementById("stop")
+const restart = document.getElementById("restart")
 const occ = document.getElementById("occ")
 const speed = document.getElementById("speed")
 const jumpbtn = document.getElementById("jump")
@@ -97,6 +98,7 @@ world.floor()
 dyno.show()
 
 redo()
+restart.addEventListener('click',()=>{redo()});
 function redo(){
   let time = 0,timeJump = 0, jump_time = 0.1;
   let game = setInterval(()=>{
