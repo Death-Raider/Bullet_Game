@@ -9,8 +9,6 @@ const jumpbtn = document.getElementById("jump")
 class World{
   constructor(){
     this.gravity = 6;
-    this.objectSpeed = 5;
-    this.occur = 100;
   }
   floor(){ //creates floor
     ctx.beginPath();
@@ -34,12 +32,13 @@ class World{
     }else{return false}
   }
 }
-class Dyno extends World {
+class Dyno extends World{
   constructor() {
     super()
     this.jumpStrength = 25;
     this.location = [[60,210],[20,40]]; //[x,y],[width,height]
     this.previousTime = -1;
+    this.gravity = 6;
   }
   show(){
     ctx.beginPath();
@@ -63,11 +62,16 @@ class Dyno extends World {
     this.show();
     return t
   }
+  resetDyno(){
+        this.location = [[60,210],[20,40]]; //[x,y],[width,height]
+        this.previousTime = -1;
+  }
 }
-class Bullet extends World{
+class Bullet{
   constructor(){
-    super()
     this.obj = []
+    this.objectSpeed = 5;
+    this.occur = 100;
   }
   create(){this.obj.push([[c.width,220],[15,10]])} // addes a bullet
   move(){ // moves all bullets on screen
@@ -88,55 +92,83 @@ class Bullet extends World{
     ctx.fillStyle = "#fff8f8";
     ctx.fillRect(x[0][0]-2,x[0][1],x[1][0]+3,x[1][1]);
   }
+  clearBullets(){
+      this.obj = []
+      this.objectSpeed = 5
+      this.occur = 100
+  }
 }
 
-Start()
-function Start(){
+let world = new World()
+let dyno = new Dyno()
+let bullet = new Bullet()
+let time = 0
+let timeJump = 0
+let jump_time = 0.1
+clear()
+world.floor()
+dyno.show()
 
+
+
+function game(world, dyno, bullet){
+    timeJump = dyno.jump(timeJump,jump_time);
+    bullet.move();
+
+    if(timeJump == 6) timeJump--;
+    jumpbtn.disabled = (world.onFloor(dyno.location) > 0)
+    if(bullet.obj.length != 0) if(world.checkCollision(dyno,bullet.obj)) EndInterval();
+    if(time%bullet.occur == 50){
+        bullet.create();
+        let rand_bullet_addition = Math.floor(Math.random()*15)
+        if( rand_bullet_addition == 10 ){bullet.create();bullet.create();}
+        if( rand_bullet_addition == 5 || rand_bullet_addition == 13 || rand_bullet_addition == 4) bullet.create();
+        bullet.objectSpeed += 0.2;
+        bullet.occur -= 1
+        jump_time += 0.015
+    }
+    if(bullet.occur <= 50){
+        ctx.strokeText("END! U WON!!!",450,150)
+        EndInterval()
+    };
+    occ.innerHTML = "Bullets Left =>"+(bullet.occur-50);
+    speed.innerHTML = "Bullet Speed =>"+bullet.objectSpeed.toFixed(2);
+    time++
+}
+
+let interval
+
+function startInterval(){
+    interval = setInterval(game, 20, world, dyno, bullet)
+}
+function EndInterval(){
+    clearInterval(interval)
+}
+
+btn.addEventListener('click',()=>{
+    timeJump = 0
+});
+stop.addEventListener('click',()=>{
+    EndInterval()
+    bullet.clearBullets()
+    dyno.resetDyno()
+    jump_time = 0.1
+    time = 0
+
+});
+restart.addEventListener('click',()=>{
+    EndInterval()
+    bullet.clearBullets()
+    dyno.resetDyno()
+    jump_time = 0.1
+    time = 0
     clear()
-    let world = new World()
-    let dyno = new Dyno()
-    let bullet = new Bullet()
     world.floor()
     dyno.show()
-    let time = 0
-    let timeJump = 0
-    let jump_time = 0.1
+    console.log(bullet, dyno)
+    startInterval()
+});
 
-    function game(world, dyno, bullet){
-        timeJump = dyno.jump(timeJump,jump_time);
-        bullet.move();
-        btn.addEventListener('click',()=>{timeJump = 0});
-        if(timeJump == 6) timeJump--;
-        jumpbtn.disabled = (world.onFloor(dyno.location) > 0)
-        if(bullet.obj.length != 0) if(world.checkCollision(dyno,bullet.obj)) EndInterval(interval);
-        if(time%bullet.occur == 50){
-            bullet.create();
-            let rand_bullet_addition = Math.floor(Math.random()*15)
-            if( rand_bullet_addition == 10 ){bullet.create();bullet.create();}
-            if( rand_bullet_addition == 5 || rand_bullet_addition == 13 || rand_bullet_addition == 4) bullet.create();
-            bullet.objectSpeed += 0.2;
-            bullet.occur -= 1
-            jump_time += 0.015
-        }
-        if(bullet.occur <= 50){
-            ctx.strokeText("END! U WON!!!",450,150)
-            EndInterval(interval)
-        };
-        occ.innerHTML = "Bullets Left =>"+(bullet.occur-50);
-        speed.innerHTML = "Bullet Speed =>"+bullet.objectSpeed.toFixed(2);
-        time++
-    }
-
-    let interval = setInterval(game, 20, world, dyno, bullet)
-
-    stop.addEventListener('click',()=>{EndInterval(interval)});
-    restart.addEventListener('click',()=>{
-        EndInterval(interval)
-        Start()
-    });
-}
-function EndInterval(x){ clearInterval(x)}
 function clear(){
   ctx.beginPath();
   ctx.fillStyle = "#fff8f8";
